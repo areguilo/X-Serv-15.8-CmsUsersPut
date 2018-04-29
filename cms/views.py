@@ -1,9 +1,12 @@
 from django.shortcuts import render
 from django.http import HttpResponse
 from .models import Pages
+from django.contrib.auth import authenticate, login
 
 # Create your views here.
+
 def mainPage(request):
+
     list = Pages.objects.all()
     response = '<ul><h2>'
     for item in list:
@@ -11,6 +14,12 @@ def mainPage(request):
         response = response + '<li><a href=http://localhost:8000/' + str(item.name) + ">" + item.name + '</a></li>'
     response = response + '</ul></h2>'
     response = "<h1>Hi!, these are our contents managed:</h1>" + response
+    if request.user.is_authenticated():
+        response += '<h2>Hi ' + request.user.username + '</h2>'
+        print(request.user.username)
+    else:
+        print('no')
+        response += '<h2>Hi unknown client. Please <a href=http://localhost:8000/admin/>login</a></h2>'
     return HttpResponse(response)
 
 def contentPage(request, identifier):
