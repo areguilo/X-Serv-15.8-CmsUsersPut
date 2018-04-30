@@ -57,18 +57,24 @@ def my_view(request):
         # Return an 'invalid login' error message.
     return HttpResponse(response)
 
-def contentPage(request, identifier):
+
+changeContentForm = """<html><body><form action="" method = "POST"><br>
+<input type="text" name='content' value=""><br>
+<input type="submit"value="change content"></form></body></html>"""
+@csrf_exempt
+def contentPage(request, name):
     if request.method == "GET":
+        try:
+            object = Pages.objects.get(name = name)
+            response = "<h2>The page's content is: </h2>" + object.page + '<br><br><a href=http://localhost:8000/> Return to Main menu </a><br>'
+        except Pages.DoesNotExist:
+            response = "There are not pages for this object"
         if request.user.is_authenticated():
-            try:
-                object = Pages.objects.get(name = identifier)
-                response = object.page + '<br><br><a href=http://localhost:8000/> Return to Main menu </a>'
-            except Pages.DoesNotExist:
-                response = "There are not pages for this object"
-        else:
-            response = '<h2>Information no available. Please <a href=http://localhost:8000/authenticate>login</a></h2>'
+            response += '<h3>Change content:</h3>' + changeContentForm
     else:
-        page = Pages(name = identifier, page = request.body)
-        page.save()
-        response = page.name + "created"
+        object = Pages.objects.get(name = name)
+        object.page = request.POST['content']
+        object.save()
+        response = 'Actualised page<br><a href=http://localhost:8000/> Return to Main menu </a><br> \
+        <a href=http://localhost:8000/' + name + '> Go to ' + name + "'s page </a>"
     return HttpResponse(response)
