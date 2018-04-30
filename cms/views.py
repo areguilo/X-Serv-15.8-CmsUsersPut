@@ -1,8 +1,8 @@
 from django.shortcuts import render
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseRedirect
 from .models import Pages
-from django.contrib.auth import authenticate, login, logout
 from django.views.decorators.csrf import csrf_exempt
+from django.contrib.auth import authenticate, login, logout
 
 # Create your views here.
 
@@ -16,7 +16,7 @@ def mainPage(request):
     response = response + '</ul></h2>'
     response = "<h1>Hi!, these are our contents managed:</h1>" + response
     if request.user.is_authenticated():
-        response += '<h2>Hi ' + request.user.username + '</h2>'
+        response += '<h2>Hi ' + request.user.username + ': <a href=http://localhost:8000/logout>logout</a></h2>'
         print(request.user.username)
     else:
         print('no')
@@ -24,20 +24,26 @@ def mainPage(request):
     return HttpResponse(response)
 
 
-def login(request):
-    return HttpResponse("""<form action="/login" method = "POST">
+def loginpage(request):
+    return HttpResponse("""<html><body><form action="/login" method = "POST">
     Username:<br>
     <input type="text" name='username' value=""><br>
     Password:<br>
     <input type="password" name='password' value=""><br>
-    <input type="submit"value="Enviar"></form>""")
+    <input type="submit"value="login"></form></body></html>""")
+
+def logout_view(request):
+    logout(request)
+    return HttpResponseRedirect('http://localhost:8000/')
 
 @csrf_exempt
 def my_view(request):
-    username = request.POST['username']
-    password = request.POST['password']
-    print (request)
-    user = authenticate(username=username, password=password)
+    username = request.POST.get('username')
+    password = request.POST.get('password')
+    print ('usu: ' + username)
+    print ('psw: ' + password)
+    user = authenticate(username='root', password='root')
+    print (user)
     if user is not None:
         if user.is_active:
             login(request, user)
